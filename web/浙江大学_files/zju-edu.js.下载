@@ -1,0 +1,112 @@
+$(function(){
+	if(parseInt($.browser.version) == 6){
+		cgFixPng.fix('div,span, ul, img, li,a,a:hover, input,.login-input,.login-button,.login-box-top,img,background');
+	}
+	if($("#login_box").size()!=0){
+		$("#login_box").showLoginBox();
+	}
+	if($("#news_tabs").size()!=0){
+		$("#news_tabs").showNewsList();
+	}
+	if($("#news_pic").size()!=0){
+		$("#news_pic").SlideShow();
+	}
+	$("#jMenu").find("ul").addClass("thirdmenu");
+	$("#jMenu").find(".subcon").children("ul").removeClass("thirdmenu");
+	$("#jMenu").jMenu();
+	
+	$(".p-news-list li:even").addClass("odd");
+	$(".p-news-list li:odd").addClass("even");
+	
+	$(".foot_nav span:last").remove();
+	
+	if($(".wp_listcolumn_x").length > 0){
+		$(".catalog_title").remove();
+	}
+	var ibannerimg  = $(".banner").data("imagelink");
+	if(ibannerimg){
+		$(".banner").css("backgroundImage",ibannerimg);
+	}
+	
+	$("#keywords").clearInput();
+	if($(".list").size()!=0){
+		$(".list").showYX(".list");
+	}
+
+	$(".people-box a").click(function(event){
+		$(this).showBox({"byName":true});
+		event.preventDefault();
+		event.stopPropagation();
+		return false;
+		//window.event.returnValue = false; 
+	});
+	$(".xjld_tbl a").click(function(event){
+		$(this).showBox({"byName":true});
+		event.preventDefault();
+		event.stopPropagation();
+		return false;
+		//window.event.returnValue = false; 
+	});
+/* 	$.getJSON('http://www.zju.edu.cn/zjusso?cmd=ajax_user_info', function(data){
+		if (data!=null){
+		var html='<a id="user_name" href="http://my.zju.edu.cn" target="_blank">'+data.name+'@ZJU</a> <a href="javascript:void(0)" id="logout">??</a>';
+		$(".show_login").html(html);
+		$("#logout").click(function(){
+		$.getJSON('http://www.zju.edu.cn/zjusso?cmd=ajax_logout', function(){
+			var html='<a href="javascript:void(0)" id="show_box">????</a>';
+			$(".show_login").html(html);
+		});
+		});
+		}
+	}); */
+	
+	if($(".right-box").size()!=0){
+		//$.fn.scrolltotop.init();
+	}
+	
+	if($("#guestbook").size()!=0){
+		var checkEmail=function(str){
+		  var reg = /^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/;
+			if(reg.test(str)){
+				return true;
+			}else{
+				return false;
+			}
+		}
+		var changeInput=function($this,tips){
+			var defaultValue=$this.val();
+			var flag=true;
+			$this.css("border","1px solid #F00").val(tips).click(function(){
+				if(flag==true){
+					$this.val(defaultValue);
+					flag=false;
+					$this.css("border","1px solid #D6D6D6");
+				}
+			});
+		}
+		$("#guestbook")[0].reset();
+		$("#guestbook").submit(function(){
+			if($("#email").val()!=""&&!checkEmail($("#email").val())){
+				changeInput($("#email"),"???????????????");
+				return false;
+			}else{
+				if($("#title").val()==""){
+					changeInput($("#title"),"???????");
+					return false;
+				}else if(FCKeditorAPI.GetInstance("content").GetXHTML()==""){
+					return false;
+				}
+			}
+			return true;
+		})
+	}
+	if($(".right-box").size()!=0){
+		$.fn.scrolltotop.init();
+	}
+
+	$("a[link*='http://']:not([link*='"+location.hostname+"'])").attr("target","_blank");
+
+	$(".right_content").find("#wp_news_w7").each(function(){
+		$(this).find(".sublist_title").children().removeAttr("href");
+	});
+});

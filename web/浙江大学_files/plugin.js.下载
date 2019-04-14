@@ -1,0 +1,721 @@
+;(function($){
+	//?????
+	$.fn.clearInput=function(options){
+		var defaults={
+			default_value:"?????"
+		}
+		options=$.extend(options,defaults);
+		$(this).click(function(){
+			$(this).val("");
+		});
+		
+	}
+	$.fn.checkFrom=function(options){
+		var defaults={
+			tips:""
+		}
+	}
+	
+	//???????
+	$.fn.showLoginBox=function(options){
+		var defaults={
+			showBox:"#show_box",
+			boxID:"#login_box",
+			closeTopID:"#close_top",
+			closeBottom:"#close_bottom",
+			showTipsID:"#show_tips",
+			boxTop:".login-box-top",
+			boxBottom:".login-box-bottom",
+			formID:"#login_form"
+		};
+		options=$.extend(defaults,options);
+		$(options.showBox).live('click',function(){
+			$("input",$(options.boxID)).val("");
+			$(options.boxID).animate({"opacity":"show"},500);
+		});
+		$(options.closeTopID).click(function(){
+			$(options.boxID).animate({"opacity":"hide"},500);
+		});
+		$(options.closeBottom).click(function(){
+			$(options.boxBottom).animate({"opacity":"hide"},500);
+		});
+		$(options.showTipsID).click(function(){
+			$(options.boxBottom).animate({"opacity":"show"},500);
+		});
+		
+		$(options.formID).submit(function(){
+			var username=$("#username").val();
+			var password=$("#password").val();
+			if(username!=""&&password!=""){
+				$.getJSON('http://www.zju.edu.cn/zjusso?cmd=ajax_login&xgh='+username+'&password='+password,function(data){
+					if(data!=null){
+						var html='<a id="user_name" href="http://my.zju.edu.cn" target="_blank">'+data.name+'@ZJU</a> <a href="javascript:void(0)" id="logout">??</a>';
+						$(".show_login").html(html);
+						$(options.boxID).animate({"opacity":"hide"},500);
+						$("#logout").click(function(){
+		$.getJSON('http://www.zju.edu.cn/zjusso?cmd=ajax_logout', function(){
+			var html='<a href="javascript:void(0)" id="show_box" target="_blank">????</a>';
+			$(".show_login").html(html);
+		});
+		});
+					}else{
+						alert("??????????");
+					}
+				});
+				return false;
+			}
+			return false;
+		});
+		/*setTimeout(function(){
+			$(options.boxID).animate({"opacity":"hide"},500);
+		},4000);*/
+	}
+	//????????
+	$.fn.showNewsList=function(options){
+		var defaults={
+			newsBox:".news-bottom",
+			newsTabsBox:"#news_tabs",
+			tabs:".news-tab",
+			tabActive:"news-tab-active",
+			tabHover:"news-tab-hover",
+			newsList:".news-list"
+		}
+		options=$.extend(defaults,options);
+		var change=function(tab,index){
+			if(index!=id){
+				$(options.newsTabsBox+" "+options.tabs).eq(id).removeClass(options.tabActive).addClass(options.tabHover);
+				$(tab).removeClass(options.tabHover).addClass(options.tabActive);
+				$(options.newsBox+" "+options.newsList).eq(id).hide();
+				$(options.newsBox+" "+options.newsList).eq(index).show();
+				$(options.newsTabsBox).children("a").eq(id).hide();
+				$(options.newsTabsBox).children("a").eq(index).show();
+				id=index;
+			}
+		}
+		var timer,id=0;
+		$(options.newsTabsBox+" "+options.tabs).each(function(index){
+			$(this).hover(function(){
+				var curren_obj=this;
+				timer=setTimeout(function(){
+					change(curren_obj,index);
+				},400);
+			},function(){
+				clearTimeout(timer);
+			});
+		});
+	}
+	
+	//????????
+	$.fn.SlideShow=function(options){
+		var defaults={
+			speed:500,
+			intervalTime:5000,
+			Type:"ScrollIn",
+			Direction:"RightLeft",
+			newsPicID:"#news_pic"
+		}
+		options=$.extend(options,defaults);
+		var picArray=new Array();
+		$('<div class="news-heading"><h3 id="news_heading"><a id="news_link" href="#" target="_blank"></a></h3><ul id="news_icon"></ul></div>').appendTo($(this));
+		//alert($(this).children("a").size());
+
+		$(this).children("a").each(function(index){
+			var obj=new Object();
+			obj.href=$(this).attr("href");
+			obj.src=$(this).children("img").attr("src");
+			obj.alt=$(this).children("img").attr("alt");
+			picArray.push(obj);
+			if(index==0){
+				$(this).show();
+				$('<li class="icon-hover"></li>').appendTo($("#news_icon"));
+				$("#news_link").attr("href",$(this).attr("href")).html($(this).children("img").attr("alt"));
+			}else{
+				$("<li></li>").appendTo($("#news_icon"));
+				$(this).remove();
+			}
+			//alert($(this).html());
+			
+		});
+		var timer,IntervalTimer,id=0;
+		var change=function(index,flag){
+			if(index!=id){
+				$("#news_icon li").eq(id).removeClass("icon-hover");
+				$("#news_icon li").eq(index).addClass("icon-hover");
+				//alert(index);
+				$("#news_link").attr("href",picArray[index].href).html(picArray[index].alt);
+				$("#news_pic a:eq(0)").attr("href",picArray[index].href);
+				$("#news_pic a:eq(0) img").attr("alt",picArray[index].alt);
+				if(flag!=0){
+					if(id<index){
+						$("#news_pic a:eq(0) img").ImageSwitch({Type:"ScrollIn",NewImage:picArray[index].src, Direction: "RightLeft"}); 
+						
+						
+					}else{
+						$("#news_pic a:eq(0) img").ImageSwitch({Type:"ScrollIn",NewImage:picArray[index].src, Direction: "LeftRight"}); 
+					}
+					
+				}else{
+					$("#news_pic a:eq(0) img").ImageSwitch({Type:"ScrollIn",NewImage:picArray[index].src, Direction: "RightLeft"});
+					
+				}
+				id=index;
+			}
+		}
+		var Interval=function(index,flag){
+			IntervalTimer=setInterval(function(){
+				change(index,flag);
+				index=(index+1)%picArray.length; 
+			},5000);
+		}
+		Interval(1,0);
+		$("#news_icon li").each(function(index){
+			$(this).hover(function(){
+				clearInterval(IntervalTimer);
+				timer=setTimeout(function(){
+					change(index,1);
+				},500);
+			},function(){
+				clearTimeout(timer);
+				Interval(index,0);
+			});
+
+		});
+		
+	}
+	/* ????*/
+	
+	$.fn.showYX=function(listID){
+		$(listID).each(function(){
+			var top=parseInt(($(this).parent("div").height()-$(this).height())/2);
+			$(this).css("top",top);
+			var id=0;
+			$(this).children("li").each(function(index){
+				var timer;
+				$(this).mouseover(function(){
+					var main=function(li){
+						if(index!=id){
+							$(li).parent("ul").children("li").eq(id).find(".list1").animate({"opacity":"hide"},0);	
+							$(li).parent("ul").children("li").eq(id).css("background","none");
+							var ul_height=$(li).children("ul").height();
+							var height=$(li).parent("ul").parent("div").innerHeight(true)-($(li).offset().top-$(li).parent("ul").parent("div").offset().top)-5;
+							if(ul_height>height){
+								$(li).children("ul").css("top",height-ul_height);
+							}
+							$(li).children("ul").animate({"opacity":"show"},0);
+							$(li).css("background","url(/template/chinese2/images/icon1.jpg) 165px 7px no-repeat");
+							id=index;
+						}
+					}
+					var current_obj=this;
+					timer=setTimeout(function(){
+						main(current_obj);
+					},100);
+				}).mouseout(function(){
+					clearTimeout(timer);
+				});
+			});
+		})
+	};
+	
+	
+	/*???????*/
+	$.fn.showBox=function(options){
+		var defaults={
+			boxID:"#people-wrap",
+			closeID:"#close",
+			contentID:"#people_content",
+			byName:true
+		};
+		options=$.extend(defaults,options);
+		$('<div class="people-wrap" id="people-wrap"><div class="people-content" ><span id="close"></span><div id="people_content"></div></div></div>').css("opacity","hide").prependTo("body");
+		//$("body").css({"overflow":"auto"});
+		//$("html").css({"overflow":"hidden"});
+		$this=$(this);
+		//div????????????????????
+		$("<div id=\"tempDiv\"  style=\"position:absolute;z-index:3;background:#000;filter:alpha(opacity=40);\"></div>").prependTo("body").css({"opacity":"0.4","height":$(document).height(),"width":$(window).width()});
+		
+		var windowWidth,divWidth,maxHeight,top,left;
+		windowWidth=$(window).width();
+		maxHeight=$(document).height()+300;
+		divWidth=$(options.boxID).outerWidth(false);
+		top=200;
+		left=parseInt((windowWidth+$(document).scrollLeft()-divWidth)/2);
+		$(options.boxID).css({"maxHeight":maxHeight,"_height":maxHeight,"top":top,"left":left});
+		//.animate({"opacity":"show"},1000)
+		//$(options.contentID).html('<div style="line-height:1.5">???????</div>').show();
+		loadHtml(options);
+		$(options.boxID+" "+options.closeID).click(function(){
+			hide(options);
+		});
+		$("#tempDiv").click(function(){
+			hide(options);
+		});
+	}
+	var hide=function(options){
+		$(options.boxID).animate({"opacity":"hide"},600,function(){
+			$("#tempDiv").animate({"opacity":"hide"},300,function(){
+				$("#tempDiv,.people-wrap").empty();
+				return false;
+			});
+			//$("body").css({"overflow":"auto"});
+			//$("html").css({"overflow":"auto"});
+		});
+	}
+	var loadHtml=function(options){
+		var callback=function(){
+			var $this=$(options.boxID),top=$(window).scrollTop()+($(window).height()-$this.outerHeight())/2;
+			$this.css("top",top).animate({"opacity":"show"},400);
+		}
+		if(options.byName==true){
+			$(options.contentID).load($this.attr("name"),callback);
+		}else{
+			$(options.contentID).load($this.attr("href"),callback);
+		}
+	}
+
+	//????
+	$.fn.scrolltotop={
+	//startline: Integer. Number of pixels from top of doc scrollbar is scrolled before showing control
+	//scrollto: Keyword (Integer, or "Scroll_to_Element_ID"). How far to scroll document up when control is clicked on (0=top).
+	setting: {startline:500, scrollto: 0, scrollduration:1000, fadeduration:[600, 200]},
+	controlHTML: '<img src="/_upload/tpl/00/14/20/template20/images/totop.png" alt="????" />', //HTML for control, which is auto wrapped in DIV w/ ID="topcontrol"
+	controlattrs: {offsetx:0, offsety:0}, //offset of control relative to right/ bottom of window corner
+	anchorkeyword: '#top', //Enter href value of HTML anchors on the page that should also act as "Scroll Up" links
+
+	state: {isvisible:false, shouldvisible:false},
+
+	scrollup:function(){
+		if (!this.cssfixedsupport) //if control is positioned using JavaScript
+			this.$control.css({opacity:0}) //hide control immediately after clicking it
+		var dest=isNaN(this.setting.scrollto)? this.setting.scrollto : parseInt(this.setting.scrollto)
+		if (typeof dest=="string" && jQuery('#'+dest).length==1) //check element set by string exists
+			dest=jQuery('#'+dest).offset().top
+		else
+			dest=0
+		this.$body.animate({scrollTop: dest}, this.setting.scrollduration);
+	},
+
+	keepfixed:function(){
+		var $window=jQuery(window)
+		var controlx=$window.scrollLeft() + $window.width() - this.$control.width() - this.controlattrs.offsetx
+		var controly=$window.scrollTop() + $window.height() - this.$control.height() - this.controlattrs.offsety
+		this.$control.css({left:controlx+'px', top:controly+'px'})
+	},
+
+	togglecontrol:function(){
+		var scrolltop=jQuery(window).scrollTop()
+		if (!this.cssfixedsupport)
+			this.keepfixed()
+		this.state.shouldvisible=(scrolltop>=this.setting.startline)? true : false
+		if (this.state.shouldvisible && !this.state.isvisible){
+			this.$control.stop().animate({opacity:"show"}, this.setting.fadeduration[0])
+			this.state.isvisible=true
+		}
+		else if (this.state.shouldvisible==false && this.state.isvisible){
+			this.$control.stop().animate({opacity:"hide"}, this.setting.fadeduration[1])
+			this.state.isvisible=false
+		}
+	},
+	
+	init:function(){
+		var mainobj=$.fn.scrolltotop
+		var iebrws=document.all
+		mainobj.cssfixedsupport=!iebrws || iebrws && document.compatMode=="CSS1Compat" && window.XMLHttpRequest //not IE or IE7+ browsers in standards mode
+		mainobj.$body=(window.opera)? (document.compatMode=="CSS1Compat"? $('html') : $('body')) : $('html,body')
+		//??????
+		var right=parseInt(($(window).width()-$(".copyright").width())/2)-21;
+		mainobj.$control=$('<div id="topcontrol">'+mainobj.controlHTML+'</div>')
+			.css({position:mainobj.cssfixedsupport? 'fixed' : 'absolute', bottom:mainobj.controlattrs.offsety, right:mainobj.controlattrs.offsetx+right, opacity:"hide", cursor:'pointer',display:"none"})
+			.attr({title:'????'})
+			.click(function(){mainobj.scrollup(); return false})
+			.appendTo('body')
+		if (document.all && !window.XMLHttpRequest && mainobj.$control.text()!='') //loose check for IE6 and below, plus whether control contains any text
+			mainobj.$control.css({width:mainobj.$control.width()}) //IE6- seems to require an explicit width on a DIV containing text
+		mainobj.togglecontrol()
+		$('a[href="' + mainobj.anchorkeyword +'"]').click(function(){
+			mainobj.scrollup()
+			return false
+		})
+		$(window).bind('scroll resize', function(e){		
+			if($(document).height()-$(window).height()-$("html").scrollTop()<=95){
+				var bottom=95-($(document).height()-$(window).height()-$("html").scrollTop());				
+				mainobj.$control.css({bottom:bottom});
+			}else{
+				mainobj.$control.css({bottom:5});
+			}
+			mainobj.togglecontrol()
+		})
+		}
+	}
+	
+	
+	$.cgPictureEffect={
+		_init:function($this,opt){
+			var ui={},pictureObject={};
+			pictureObject.ui=ui;
+			pictureObject.settings=opt;
+			this._initUi($this,ui,opt,pictureObject);
+			this._create(ui,opt,pictureObject);
+			if(opt.auto){
+				this.auto(ui,opt,pictureObject);
+			}
+			
+			this._bindEvents(ui,opt,pictureObject);
+		},
+		_initUi:function($this,ui,opt){
+			ui.$this=$this;
+			ui.pictureContainer=$(opt.picture,$this);
+			ui.picturesContainer=$(opt.effect.containerSelector,ui.pictureContainer);
+			ui.pictures=$(opt.effect.pictureSelector,ui.picturesContainer);
+			
+			
+			ui.pictureWidth=ui.pictures.eq(0).outerWidth();
+			//var _device=CG.device();
+			//if(_device&&_device.mobile()){
+			//	opt.mobile=true;
+			//}
+			if(opt.link){
+				ui.links=$(opt.link,$this);
+			}else{
+				ui.links=ui.pictures.children("a");
+			}
+			ui.thumbPictureContainer=$(opt.thumbPicture,$this);
+			ui.titleContainer=$(opt.title,$this);
+			ui.prev=$(opt.prev,$this);
+			ui.next=$(opt.next,$this);
+			ui.stop=$(opt.stop,$this);
+			ui.start=$(opt.start,$this);
+			ui.maxTime=Math.max(opt.thumbEffect.speed,opt.titleEffect.speed,opt.effect.speed);
+			ui.pictureLength=ui.pictures.length;
+			ui.current=opt.current;
+			ui.previous=ui.current;
+			ui._previous=ui.current;
+			ui.finished=true;
+		},
+		_create:function(ui,opt){
+			var html='<ul class="'+(opt.thumbEffect.className||"")+'">',length=ui.pictureLength;
+			if(opt.picture){
+				
+				switch(opt.effect.type){
+					case "fade":
+						ui.pictures.eq(opt.current).show().siblings().hide();
+						ui.picturesContainer.css("position","relative");
+						ui.pictures.css({
+							"position":"absolute",
+							"top":0,
+							"left":0
+						});
+						break;
+					case "fadein":
+						ui.pictures.eq(opt.current).show().siblings().hide();
+						ui.pictures.eq(opt.current).show().siblings().hide();
+						ui.picturesContainer.css("position","relative");
+						ui.pictures.css({
+							"position":"absolute",
+							"top":0,
+							"left":0
+						});
+						break;
+					case "slide":
+						ui.pictureContainer.css("position","relative");
+						ui.picturesContainer.css({
+							"position":"absolute",
+							"top":0,
+							"left":0
+						});
+						break;
+					case "sameDirectionSlide":
+						ui.picturesContainer.css({
+							"position":"relative"							
+						});
+						
+						ui.pictures.css({
+							"position":"absolute",
+							"top":0,
+							"left":0,
+							"z-index":1
+						});
+						ui.pictures.eq(opt.current).css("z-index",2);
+						break;
+				}
+			}
+			if(opt.thumbPicture){
+				switch(opt.thumbEffect.style){
+					case "image":
+						for(var i=0;i<length;i++){
+							if(i===opt.current&&opt.thumbEffect.selectedClass){
+								html+='<li class="'+opt.thumbEffect.selectedClass+'">'+ui.pictures.eq(i).html()+'</li>';
+							}else{
+								html+='<li>'+ui.pictures.eq(i).html()+'</li>';
+							}
+						}
+						html+="</ul>";
+						ui.thumbPictureContainer.append(html);
+						break;
+					case "icon":
+						for(var i=0;i<length;i++){
+							if(i===opt.current&&opt.thumbEffect.selectedClass){
+								html+='<li class="'+opt.thumbEffect.selectedClass+'"></li>';
+							}else{
+								html+='<li></li>';
+							}
+						}
+						html+="</ul>";
+						ui.thumbPictureContainer.append(html);
+						break;
+					case "number":
+						for(var i=0;i<length;i++){
+							if(i===opt.current&&opt.thumbEffect.selectedClass){
+								html+='<li class="'+opt.thumbEffect.selectedClass+'">'+(i+1)+'</li>';
+							}else{
+								html+='<li>'+(i+1)+'</li>';
+							}							
+						}
+						html+="</ul>";
+						ui.thumbPictureContainer.append(html);
+						break;
+				}
+				ui.thumbPictures=$("li",ui.thumbPictureContainer);
+				ui.thumbLinks=$("a",ui.thumbPictures);
+				if(opt.thumbEffect.style==="image"&&opt.thumbEffect.type==="fade"){
+					ui.thumbPictures.eq(opt.current).show().siblings().css("opacity",opt.thumbEffect.opacity);
+				}
+			}
+			if(opt.title){
+				 ui.title=$('<a href="" title=""  target="_blank"></a>');
+				 ui.title.appendTo(ui.titleContainer).addClass(opt.titleEffect.className);
+				 this.titleEffect(opt.current,ui,opt);
+			}
+		},
+		change:function(current,ui,opt,pictureObject){
+			if(ui._previous==current||!ui.finished){
+				return;
+			}
+			
+			ui._previous=current;
+			ui.current=current;
+			if($.isFunction(opt.before)&&opt.before.call(this,pictureObject)===false){
+				return false;
+			}
+			this.pictureEffect(current,ui,opt);
+			this.titleEffect(current,ui,opt);
+			this.thumbPictureEffect(current,ui,opt);
+			setTimeout(function(){
+				ui.previous=current;
+				if($.isFunction(opt.after)){
+					opt.after.call(this,pictureObject);
+				}
+			},ui.maxTime);
+		},
+		titleEffect:function(current,ui,opt){
+			if(!opt.title) return ;
+			var currentLink=ui.links.eq(current),title=currentLink.attr("title")||"",href=currentLink.attr("href")||"";
+			
+			switch(opt.titleEffect.type){
+				case "fade":
+					ui.title.stop(true,true).fadeOut(opt.titleEffect.speed,function(){
+						ui.title.attr("href",href).attr("title",title).html(title.substr(0,opt.titleEffect.cut));
+					}).stop(true,true).fadeIn(opt.titleEffect.speed);
+					break;
+				case "default":
+					ui.title.attr("href",href).attr("title",title).html(title.substr(0,opt.titleEffect.cut));
+					break;
+				default:
+					if($.isFunction(opt.titleEffect.typeFunction)){
+						opt.titleEffect.typeFunction(current,ui,opt);
+					}
+					break;
+			}
+		},
+		pictureEffect:function(current,ui,opt){
+			var currentPicture=ui.pictures.eq(current),_left;
+			switch(opt.effect.type){
+				case "fade":
+					currentPicture.stop(true,true).fadeIn(opt.effect.speed,opt.effect.easing);
+					currentPicture.siblings().stop(true).fadeOut(opt.effect.speed);
+					break;
+				case "fadein":
+					ui.pictures.stop(true,true).fadeOut(0);
+					currentPicture.stop(true,true).fadeIn(opt.effect.speed,opt.effect.easing);					
+					break;
+				case "slide":					
+					//?????100%?ui.picturesContainer?????????
+					_left=(-current*100)+"%";
+					ui.picturesContainer.stop().animate({"left":_left},opt.effect.speed,opt.effect.easing||null);					
+					break;
+				case "sameDirectionSlide":
+					ui.finished=false;
+					var prevPicture=ui.pictures.eq(ui.previous),left=ui.pictureWidth;
+					left=100;
+					console.log(current,ui.previous);
+
+					//ui.picturesContainer?????????
+					if(ui.previous<current||(ui.previous==ui.pictureLength-1&&current==0)){
+						left=-left;
+					}
+					currentPicture.css({
+						"left":-left+"%",
+						"z-index":2
+					});
+					opt.effect.speed=500;
+					ui.picturesContainer.stop(true,true).animate({"left":left+"%"},opt.effect.speed,opt.effect.easing,function(e){
+						ui.finished=true;
+						$(this).stop(true,true).css("left",0);						
+						currentPicture.css("left",0).siblings().css("z-index",1);
+					});
+					break;
+				case "default":
+					currentPicture.stop(true,true).show().siblings().stop(true,true).hide();
+					break;
+				default:
+					if($.isFunction(opt.effect.typeFunction)){
+						opt.effect.typeFunction(current,ui,opt);
+					}
+					break;
+			}
+		},
+		thumbPictureEffect:function(current,ui,opt){
+			if(!opt.thumbPicture) return ;
+			var currentThumbPicture=ui.thumbPictures.eq(current);
+			currentThumbPicture.addClass(opt.thumbEffect.selectedClass).siblings().removeClass(opt.thumbEffect.selectedClass);
+			switch(opt.thumbEffect.type){
+				case "fade":
+					if(opt.thumbEffect.style==="image"){
+						currentThumbPicture.stop(true,true).animate({"opacity":1},opt.thumbEffect.speed).siblings().stop(true,true).animate({"opacity":opt.thumbEffect.opacity},opt.effect.speed);
+					}
+					break;
+				default:
+					if($.isFunction(opt.thumbEffect.typeFunction)){
+						opt.thumbEffect.typeFunction(current,ui,opt);
+					}
+					break;
+			}
+		},
+		auto:function(ui,opt,pictureObject){
+			if(opt.auto){
+				ui.timer=setInterval(function(){
+					var current=$.cgPictureEffect.getCurrent(ui.current+1,ui,opt);
+					$.cgPictureEffect.change(current,ui,opt,pictureObject);				
+				},ui.maxTime+opt.delay+5);//????????
+			}			
+		},
+		getCurrent:function(current,ui,opt){
+			if(!opt.loop&&current==ui.pictureLength){
+				current=current-1;
+			}else{
+				current=current%ui.pictureLength;
+			}
+			if(current===-1){
+				current=ui.pictureLength-1;
+			}
+			return current;
+		},
+		_bindEvents:function(ui,opt,pictureObject){			
+			if(opt.thumbPicture){
+				ui.thumbPictures.bind(opt.thumbEffect.event,function(e){
+					var current=ui.thumbPictures.index($(this));				
+					$.cgPictureEffect.change(current,ui,opt,pictureObject);
+				});
+				ui.thumbLinks.click(function(e){
+					//return false?????dom????
+					e.preventDefault();
+				});
+			}
+
+			//?????mobile????
+			if(opt.mobile){
+				ui.pictureContainer.bind("swipeleft",function(){
+					var current=$.cgPictureEffect.getCurrent(ui.current+1,ui,opt);
+					$.cgPictureEffect.change(current,ui,opt,pictureObject);
+				});
+				ui.pictureContainer.bind("swiperight",function(){
+					var current=$.cgPictureEffect.getCurrent(ui.current-1,ui,opt);
+				$.cgPictureEffect.change(current,ui,opt,pictureObject);
+				});
+			}
+
+			ui.prev.bind("click",function(){
+				var current=$.cgPictureEffect.getCurrent(ui.current-1,ui,opt);
+				$.cgPictureEffect.change(current,ui,opt,pictureObject);
+			});
+			ui.next.bind("click",function(){
+				var current=$.cgPictureEffect.getCurrent(ui.current+1,ui,opt);
+				$.cgPictureEffect.change(current,ui,opt,pictureObject);
+			});
+			ui.start.bind("click",function(e){
+				if($.isFunction($.startHandler)){
+					$.startHandler.call(this,e,pictureObject);
+				}
+			});
+			ui.stop.bind("click",function(e){
+				if($.isFunction($.startHandler)){
+					$.stopHandler.call(this,e,pictureObject);
+				}
+			});
+			ui.$this.mouseover(function(){
+				clearInterval(ui.timer);
+			}).mouseleave(function(){
+				clearInterval(ui.timer);//?????????????
+				$.cgPictureEffect.auto(ui,opt,pictureObject);
+			});
+		}
+	};
+	$.fn.cgPictureEffect=function(opts){
+		var o=$.extend(true,{},{
+			picture:null,//??
+			thumbPicture:null,//???
+			title:null,//??
+			link:null,
+			prev:null,//???
+			next:null,//???
+			stop:null,//????????
+			start:null,//????????
+			stopHandler:function(e,obj){
+				obj.ui.stop.hide();
+				obj.ui.start.show();
+			},
+			startHandler:function(e,obj){
+				obj.ui.start.hide();
+				obj.ui.stop.show();
+			},
+			disabledClass:null,//??????????????
+			current:0,
+			loop:true,// ??????
+			effect:{//??????
+				containerSelector:"ul",
+				pictureSelector:"li",
+				type:"fade",//???????fade/fadein/slide/sameDirectionSlide
+				speed:300,//????
+				easing:null,//?????????jquery.easing.js
+				typeFunction:null,//????????
+				mouseover:null,//???????????
+				mouseout:null//??????????
+			},
+			thumbEffect:{//???????
+				className:"thumb-title",
+				style:"image",//???????????image/icon/number
+				type:"fade",//???????????fade
+				opacity:0.6,//?type==fade&&style==image? opacity??
+				speed:200,//????
+				typeFunction:null,//???????
+				selectedClass:null,//??????????
+				event:"mouseover",//???????????mouseover?click????
+				mouseover:null,//????????????
+				mouseout:null//???????????
+			},
+			titleEffect:{//??????
+				className:"title-link",				
+				type:"fade",//?????????fade
+				speed:400,//????
+				cut:40,//?????????????????????
+				typeFunction:null//???????
+			},
+			delay:2500,//???????????null?????????
+			before:null,//??????????
+			after:null//????????????
+		},opts);//??????o???
+		return this.each(function(){
+			$.cgPictureEffect._init($(this),o);
+		});
+	};
+})(jQuery);
