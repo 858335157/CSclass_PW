@@ -6,6 +6,9 @@
     <listener>
         <listener-class>com.sun.xml.ws.transport.http.servlet.WSServletContextListener</listener-class>
     </listener>
+    <welcome-file-list>
+    <welcome-file>Class_4.html</welcome-file>
+  	</welcome-file-list>
     <servlet>
         <description>JAX-WS endpoint</description>
         <display-name>WSServlet</display-name>
